@@ -9,5 +9,41 @@ data.faq.forEach(([q,a])=>$('#faq-list').insertAdjacentHTML('beforeend',`<detail
 document.addEventListener('click',e=>{const btn=e.target.closest('.choose');if(btn){$('#tariff').value=btn.dataset.value;$('#registration').scrollIntoView({behavior:'smooth'});setTimeout(()=>$('#tariff').focus(),650)}const track=e.target.closest('[data-track]');if(track)window.dataLayer?.push({event:track.dataset.track})});
 const params=new URLSearchParams(location.search);['utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach(k=>{if(params.get(k))sessionStorage.setItem(k,params.get(k))});
 const form=$('#signup-form');
-form.addEventListener('submit',e=>{e.preventDefault();if(!form.checkValidity()){form.reportValidity();return}const payload=Object.fromEntries(new FormData(form));['utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach(k=>payload[k]=sessionStorage.getItem(k)||'');payload.createdAt=new Date().toISOString();localStorage.setItem('contact-s-telom:lastLead',JSON.stringify(payload));$('.form-status').textContent='Спасибо! Заявка сохранена. Мы свяжемся с вами, чтобы подтвердить место.';form.reset();window.dataLayer?.push({event:'form_submit'})});
+form.addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(!form.checkValidity()){form.reportValidity();return}
+
+  const submitButton=form.querySelector('button[type="submit"]');
+  const status=$('.form-status',form);
+  const payload=Object.fromEntries(new FormData(form));
+  ['utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach(k=>payload[k]=sessionStorage.getItem(k)||'');
+
+  submitButton.disabled=true;
+  status.textContent='Отправляем заявку…';
+  let lockAfterPartialDelivery=false;
+
+  try{
+    const response=await fetch('/api/telegram',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    });
+    const result=await response.json().catch(()=>({}));
+    if(result.partial&&result.telegramSent){
+      lockAfterPartialDelivery=true;
+      status.textContent=result.error||'Заявка отправлена организатору, но временно не сохранена в таблице. Не отправляйте её повторно.';
+      window.dataLayer?.push({event:'form_submit_partial'});
+      return;
+    }
+    if(!response.ok||!result.ok)throw new Error(result.error||'Не удалось отправить заявку. Попробуйте ещё раз позже.');
+
+    status.textContent='Заявка отправлена. Мы свяжемся с вами в ближайшее время.';
+    form.reset();
+    window.dataLayer?.push({event:'form_submit'});
+  }catch(error){
+    status.textContent=error?.message||'Не удалось отправить заявку. Проверьте соединение и попробуйте ещё раз.';
+  }finally{
+    if(!lockAfterPartialDelivery)submitButton.disabled=false;
+  }
+});
 const observer=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target)}}),{threshold:.12});document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
