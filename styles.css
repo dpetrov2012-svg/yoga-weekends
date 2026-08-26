@@ -26,3 +26,19 @@
 .legal-checks{display:grid;gap:1rem;padding:1.2rem 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .legal-checks .consent span{line-height:1.45}
 .legal-checks a{text-underline-offset:3px}
+.topbar>.button{margin-left:auto}
+.teacher-grid{grid-template-columns:repeat(4,1fr)}
+.teacher-card img.teacher-image-contain{object-fit:contain;object-position:center top;background:#e3ded2}
+.special-guest{display:grid;grid-template-columns:1.1fr .9fr;gap:8vw;align-items:center;background:var(--green);color:white}
+.special-guest h2{margin-bottom:3rem}
+.special-guest-copy{max-width:700px}
+.guest-lead{font-size:1.25rem}
+.guest-practice{margin-top:2.5rem;color:var(--sage);font-weight:600}
+.special-guest-photo{height:620px}
+.special-guest-photo img{object-position:center}
+.price-list{display:grid;margin:2rem 0;border-top:1px solid var(--line)}
+.price-row{display:grid;grid-template-columns:minmax(120px,.42fr) 1fr;gap:1rem;align-items:baseline;padding:.8rem 0;border-bottom:1px solid var(--line)}
+.price-row b{font:400 1.55rem var(--serif)}
+.price-row span{font-size:.78rem}
+@media(min-width:801px) and (max-width:1100px){.teacher-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:800px){.special-guest{grid-template-columns:1fr;gap:3rem}.special-guest h2{margin-bottom:2rem}.special-guest-photo{height:auto;aspect-ratio:1}.teacher-card img,.teacher-placeholder{height:440px}.price-row{grid-template-columns:1fr;gap:.1rem}}
